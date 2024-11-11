@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{95A4F098-DB2D-4421-9379-A7F46660DE3B}</ProjectGuid>
+    <ProjectGuid>{F6154555-C077-491D-96E1-2E8C928D2AF6}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>a5</RootNamespace>
-    <AssemblyName>a5</AssemblyName>
+    <RootNamespace>TCPIPServer</RootNamespace>
+    <AssemblyName>TCPIPServer</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -45,7 +45,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="test.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

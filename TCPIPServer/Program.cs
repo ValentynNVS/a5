@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace a5
+namespace TCPIPServer
 {
-    internal class test
+    internal class Program
     {
+        static void Main(string[] args)
+        {
+        }
     }
 }
