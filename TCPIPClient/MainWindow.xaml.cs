@@ -24,5 +24,10 @@ namespace TCPIPClient
         {
             InitializeComponent();
         }
+
+        private void SubmitGuessButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

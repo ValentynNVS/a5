@@ -5,7 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TCPIPClient"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Word Guessing Game" 
+        Width="600" Height="450"
+        MinWidth="600" MinHeight="450"
+        Background="#2E3440">
     <Grid>
         
     </Grid>

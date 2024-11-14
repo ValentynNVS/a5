@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
 
 /*
 *   FILE          : Program.cs
@@ -19,7 +20,7 @@ namespace TCPIPServer
         static void Main(string[] args)
         {
             GameServer server = new GameServer();
-            server.GuessingGame();
+            server.GuessingGame(server);
             server.StartServer();
 
             Console.WriteLine("Press Enter to End");
