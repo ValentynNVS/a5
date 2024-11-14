@@ -9,7 +9,7 @@
         Width="600" Height="450"
         MinWidth="800" MinHeight="800"
         Background="#FFB5CEFF">
-    
+
     <Window.Resources>
         <!-- Define some reusable styles for uniform look -->
         <Style TargetType="TextBlock">
@@ -18,13 +18,14 @@
             <Setter Property="Margin" Value="5"/>
         </Style>
         <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#4C566A"/>
+            <Setter Property="Background" Value="#FF5E94FF"/>
             <Setter Property="Foreground" Value="#D8DEE9"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Padding" Value="5"/>
             <Setter Property="BorderBrush" Value="#D08770"/>
         </Style>
+        <!-- Style for Button with Hover Effect -->
         <Style TargetType="Button">
             <Setter Property="Background" Value="#5E81AC"/>
             <Setter Property="Foreground" Value="#D8DEE9"/>
@@ -32,8 +33,15 @@
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderBrush" Value="#A3BE8C"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="DarkBlue"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
+
     <Window.Effect>
         <DropShadowEffect/>
     </Window.Effect>
@@ -46,7 +54,7 @@
         </Grid.RowDefinitions>
 
         <!-- Connection Settings -->
-        <Border Grid.Row="0" BorderBrush="#8FBCBB" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+        <Border Grid.Row="0" BorderBrush="#FF56D6D3" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,0,0,10">
             <StackPanel>
                 <TextBlock Text="Server Connection Settings" FontSize="16" FontWeight="Bold" Foreground="#FF959A8E"/>
                 <StackPanel Orientation="Horizontal">
