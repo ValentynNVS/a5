@@ -25,7 +25,6 @@
             <Setter Property="Padding" Value="5"/>
             <Setter Property="BorderBrush" Value="#D08770"/>
         </Style>
-        <!-- Style for Button with Hover Effect -->
         <Style TargetType="Button">
             <Setter Property="Background" Value="#5E81AC"/>
             <Setter Property="Foreground" Value="#D8DEE9"/>
@@ -33,18 +32,9 @@
             <Setter Property="Padding" Value="10"/>
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderBrush" Value="#A3BE8C"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="DarkBlue"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
-
-    <Window.Effect>
-        <DropShadowEffect/>
-    </Window.Effect>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -59,19 +49,19 @@
                 <TextBlock Text="Server Connection Settings" FontSize="16" FontWeight="Bold" Foreground="#FF959A8E"/>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Server IP:" Width="100"/>
-                    <TextBox Name="IpAddressTextBox" Width="200" TextChanged="IpAddressTextBox_TextChanged"/>
+                    <TextBox Name="IpAddressTextBox" Width="200"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Port:" Width="100"/>
-                    <TextBox Name="PortTextBox" Width="100" TextChanged="PortTextBox_TextChanged"/>
+                    <TextBox Name="PortTextBox" Width="100"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Your Name:" Width="100"/>
-                    <TextBox Name="NameTextBox" Width="200" TextChanged="NameTextBox_TextChanged"/>
+                    <TextBox Name="NameTextBox" Width="200"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Time Limit (sec):" Width="100"/>
-                    <TextBox Name="TimeLimitTextBox" Width="100" TextChanged="TimeLimitTextBox_TextChanged"/>
+                    <TextBox Name="TimeLimitTextBox" Width="100"/>
                 </StackPanel>
                 <Button Content="Connect" Click="ConnectButton_Click"/>
                 <TextBlock Name="StatusTextBlock" Text="Status: Disconnected" Foreground="#D08770" Margin="0,10,0,0"/>
@@ -83,8 +73,9 @@
             <StackPanel>
                 <TextBlock Text="Game Controls" FontSize="16" FontWeight="Bold" Foreground="#FF959A8E"/>
                 <TextBlock Text="Enter a Word Guess:"/>
-                <TextBox Name="GuessTextBox" Width="300" TextChanged="GuessTextBox_TextChanged"/>
+                <TextBox Name="GuessTextBox" Width="300"/>
                 <Button Content="Submit Guess" Click="SubmitGuessButton_Click"/>
+                <Button Content="End Game" Click="EndGameButton_Click" Margin="5"/>
             </StackPanel>
         </Border>
 
