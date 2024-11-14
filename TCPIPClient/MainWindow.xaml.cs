@@ -29,5 +29,35 @@ namespace TCPIPClient
         {
 
         }
+
+        private void IpAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void PortTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void NameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void TimeLimitTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void ConnectButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void GuessTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }
