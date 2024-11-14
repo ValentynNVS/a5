@@ -59,5 +59,10 @@ namespace TCPIPClient
         {
 
         }
+
+        private void EndGameButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
