@@ -86,26 +86,35 @@ namespace TCPIPClient
         {
             if (!_isConnected)
             {
-                MessageBox.Show("You are not connected to a server.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("You are not connected to the server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             string guess = GuessTextBox.Text.Trim();
             if (string.IsNullOrWhiteSpace(guess))
             {
-                MessageBox.Show("Please enter a word guess.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please enter a guess.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            byte[] guessBytes = Encoding.UTF8.GetBytes(guess);
             try
             {
-                await _networkStream.WriteAsync(guessBytes, 0, guessBytes.Length);
-                ResultTextBlock.Text = $"You guessed: {guess}";
+                byte[] dataToSend = Encoding.ASCII.GetBytes(guess);
+
+                // Send data
+                await _networkStream.WriteAsync(dataToSend, 0, dataToSend.Length);
+                Console.WriteLine($"Sent: {guess}");
+
+                // Receive response
+                byte[] buffer = new byte[256];
+                int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
+                string response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+
+                ResultTextBlock.Text = $"Server Response: {response}";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to send guess: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error during communication: {ex.Message}", "Communication Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
