@@ -68,7 +68,7 @@ namespace TCPIPServer
                 Console.WriteLine("Connection happened!");
                 Action<Object> gameWorker = GuessingGame;
                 Task gameTask = Task.Factory.StartNew(gameWorker, client);
-                Thread.Sleep(10);
+                Thread.Sleep(100);
             }
         }
 
@@ -262,7 +262,7 @@ namespace TCPIPServer
         // tells you if there are any active sessions or not.
         public bool SessionsActive()
         {
-            if (playerSessions.Count == 0) { return true; }
+            if (playerSessions.Count > 0) { return true; }
             else { return false; }
         }
     }

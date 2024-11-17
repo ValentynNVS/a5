@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Markup;
 
 namespace TCPIPClient
 {
@@ -13,6 +16,7 @@ namespace TCPIPClient
         private NetworkStream _networkStream;
         private string _userName;
         private int _timeLimit;
+        private string sessionId;//
         private bool _isConnected = false;
 
         public MainWindow()
@@ -43,7 +47,8 @@ namespace TCPIPClient
             {
                 _client = new TcpClient();
                 Byte[] data = System.Text.Encoding.ASCII.GetBytes("CreatePlayerSession");//
-                await _client.ConnectAsync(ipAddress, port);
+                _client = new TcpClient(ipAddress, port);//
+                //await _client.ConnectAsync(ipAddress, port);
                 _networkStream = _client.GetStream();
                 _isConnected = true;
 
@@ -71,6 +76,8 @@ namespace TCPIPClient
                     if (bytesRead > 0)
                     {
                         string serverMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        string[] messageComponents = serverMessage.Split('|');//
+                        sessionId = messageComponents[2];//
                         Dispatcher.Invoke(() => ResultTextBlock.Text = $"Server: {serverMessage}");
                     }
                 }
@@ -103,18 +110,32 @@ namespace TCPIPClient
 
             try
             {
-                byte[] dataToSend = Encoding.ASCII.GetBytes(guess);
+                string request = "MakeGuess|" + guess + "|" + sessionId;//
+                byte[] dataToSend = Encoding.ASCII.GetBytes(request);
 
                 // Send data
-                await _networkStream.WriteAsync(dataToSend, 0, dataToSend.Length);
+
+                _client = new TcpClient("10.0.0.31", 13000);
+                _networkStream = _client.GetStream();//
+                _networkStream.Write(dataToSend, 0, dataToSend.Length);//
+                //await _networkStream.WriteAsync(dataToSend, 0, dataToSend.Length);
                 Console.WriteLine($"Sent: {guess}");
 
                 // Receive response
                 byte[] buffer = new byte[256];
-                int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
+                int bytesRead = _networkStream.Read(buffer, 0, buffer.Length);//
+                //int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
                 string response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
 
-                ResultTextBlock.Text = $"Server Response: {response}";
+                if (response.Contains("SessionNotFound"))
+                {
+                    ResultTextBlock.Text = $"Server Response: {response}"; //
+                }
+                else
+                {
+                    string[] responseComponents = response.Split('|');//
+                    ResultTextBlock.Text = $"Server Response: {responseComponents[0] + responseComponents[1]}";//
+                }    
             }
             catch (Exception ex)
             {
@@ -141,6 +162,17 @@ namespace TCPIPClient
         {
             if (_client != null)
             {
+                string closingMessage = "EndPlayerSession|" + sessionId;//
+                Byte[] closeRequest = System.Text.Encoding.ASCII.GetBytes(closingMessage);//
+
+                _client = new TcpClient("10.0.0.31", 13000);//
+                _networkStream = _client.GetStream();//
+                _networkStream.Write(closeRequest, 0, closeRequest.Length);//
+
+                closeRequest = new Byte[256];//
+                int bytes = _networkStream.Read(closeRequest, 0, closeRequest.Length);//
+                string responseMessage = System.Text.Encoding.ASCII.GetString(closeRequest, 0, bytes);//
+
                 _networkStream?.Close();
                 _client.Close();
                 _isConnected = false;
