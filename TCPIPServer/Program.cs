@@ -11,7 +11,7 @@ using System.Configuration;
 *   PROGRAMMER    : Ahmed & Valentyn
 *   FIRST VERSION : 11/11/2024
 *   DESCRIPTION   :
-*      The class in this file is used to start up the server/listener of the game.
+*      The class in this file is used to start up the server/listener of the guessing game.
 */
 namespace TCPIPServer
 {

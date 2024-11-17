@@ -24,7 +24,7 @@ namespace TCPIPServer
 {
     internal class GameServer
     {
-        //holds the details of a session
+        //to hold the details of a session
         public struct SessionVariables
         {
             public string sessionId;
@@ -55,7 +55,6 @@ namespace TCPIPServer
             // establish endpoint of connection (socket)
             TcpListener server = null;
             server = new TcpListener(ipAddress, port);
-
             server.Start();
 
             /* enter listening loop */
@@ -71,12 +70,11 @@ namespace TCPIPServer
                 Task gameTask = Task.Factory.StartNew(gameWorker, client);
                 Thread.Sleep(10);
             }
-
         }
 
         /*
         *  Method  : GuessingGame()
-        *  Summary : handle client request and provide appropriate response based on game logic.
+        *  Summary : handle client requests and provide appropriate response based on game logic.
         *  Params  : 
         *     Object o = the TcpClient object to communicate with client.
         *  Return  :  
@@ -92,7 +90,7 @@ namespace TCPIPServer
             int i;
 
             /* read request and handle it */
-            while ((i = stream.Read(request, 0, request.Length)) != 0)
+            while (stream.DataAvailable && (i = stream.Read(request, 0, request.Length)) != 0)
             {
                 message = System.Text.Encoding.ASCII.GetString(request, 0, i);
                 Console.WriteLine("Received: {0}", message);
@@ -134,7 +132,7 @@ namespace TCPIPServer
         *  Params  : 
         *     none.
         *  Return  :  
-        *     string response = a string made up of the scrambled string, number of words to be found, and the session id
+        *     string response = a string made up of the scrambled string, number of words to be found, and the session id.
         *     e.g. thisawh|6|NBIO-8346.
         */
         public string CreateSession()
@@ -188,6 +186,8 @@ namespace TCPIPServer
             int sessionNumber = 0;
             string response = string.Empty;
 
+            if (!SessionsActive()) { return "SessionNotFound"; }
+            
             /* search for player's session */
             for (int i = 0; i < playerSessions.Count; i++)
             {
@@ -239,6 +239,8 @@ namespace TCPIPServer
             string[] messageComponents = message.Split('|');
             string response = null;
 
+            if (!SessionsActive()) { return "SessionNotFound"; }
+
             /* search for player's session */
             for (int i = 0; i < playerSessions.Count; i++)
             {
@@ -255,6 +257,13 @@ namespace TCPIPServer
             }
 
             return response;
+        }
+
+        // tells you if there are any active sessions or not.
+        public bool SessionsActive()
+        {
+            if (playerSessions.Count == 0) { return true; }
+            else { return false; }
         }
     }
 }

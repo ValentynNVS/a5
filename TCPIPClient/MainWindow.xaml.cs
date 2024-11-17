@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,9 +42,12 @@ namespace TCPIPClient
             try
             {
                 _client = new TcpClient();
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes("CreatePlayerSession");//
                 await _client.ConnectAsync(ipAddress, port);
                 _networkStream = _client.GetStream();
                 _isConnected = true;
+
+                _networkStream.Write(data, 0, data.Length);//
 
                 StatusTextBlock.Text = $"Status: Connected to {ipAddress}:{port}";
                 MessageBox.Show("Connected to server successfully!", "Connection Status", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -120,6 +124,13 @@ namespace TCPIPClient
 
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
+            // make sure client is connected first
+            if (!_isConnected)
+            {
+                MessageBox.Show("You are not connected to the server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (MessageBox.Show("Are you sure you want to end the game?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 Disconnect();
