@@ -20,7 +20,9 @@ namespace TCPIPServer
         static void Main(string[] args)
         {
             GameServer server = new GameServer();
-            server.GuessingGame(server);
+            //server.GuessingGame(server);
+
+            //server.GuessingGame();
             server.StartServer();
 
             Console.WriteLine("Press Enter to End");

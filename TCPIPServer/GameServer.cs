@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 /*
@@ -21,6 +24,17 @@ namespace TCPIPServer
 {
     internal class GameServer
     {
+        //holds the details of a session
+        public struct SessionVariables
+        {
+            public string sessionId;
+            public string scrambledString;
+            public string[] wordsList;
+            public int numOfWords;
+        }
+
+        public static List<SessionVariables> playerSessions = new List<SessionVariables>(); //list of active sessions
+
         /* constants */
         const int kMaxMessageLength = 256;
 
@@ -33,10 +47,10 @@ namespace TCPIPServer
         *     none.
         */
         internal void StartServer()
-        { 
+        {
             // initialize port & IP address
             int port = 13000;
-            IPAddress ipAddress = IPAddress.Parse("127.0.0.1");
+            IPAddress ipAddress = IPAddress.Parse("10.0.0.31");
 
             // establish endpoint of connection (socket)
             TcpListener server = null;
@@ -48,34 +62,90 @@ namespace TCPIPServer
             while (true)
             {
                 // wait for a connection
-                Console.Write("Waiting for a connection...");
+                Console.WriteLine("Waiting for a connection...");
                 TcpClient client = server.AcceptTcpClient();
 
                 // connection occurred; fire off a task to handle it
-                Console.Write("Connection happened!");
+                Console.WriteLine("Connection happened!");
                 Action<Object> gameWorker = GuessingGame;
                 Task gameTask = Task.Factory.StartNew(gameWorker, client);
+                Thread.Sleep(10);
             }
-            
+
         }
 
         /*
         *  Method  : GuessingGame()
-        *  Summary : handle game logic.
+        *  Summary : handle client request and provide appropriate response based on game logic.
         *  Params  : 
-        *     none.
+        *     Object o = the TcpClient object to communicate with client.
         *  Return  :  
         *     none.
         */
         public void GuessingGame(Object o)
         {
+            /* buffer for reading request message */
             TcpClient client = (TcpClient)o;
+            NetworkStream stream = client.GetStream();
+            byte[] request = new byte[kMaxMessageLength];
+            string message = string.Empty;
+            int i;
+
+            /* read request and handle it */
+            while ((i = stream.Read(request, 0, request.Length)) != 0)
+            {
+                message = System.Text.Encoding.ASCII.GetString(request, 0, i);
+                Console.WriteLine("Received: {0}", message);
+
+                Regex startGame = new Regex(@"^CreatePlayerSession$");
+                Regex wordGuess = new Regex(@"^MakeGuess\|\S{1,10}\|\S{36}$");
+                Regex endGame = new Regex(@"^EndPlayerSession\|.{36}$");
+
+                /* call appropriate method based on request */
+                if (startGame.IsMatch(message))
+                {
+                    message = CreateSession();
+                }
+                else if (wordGuess.IsMatch(message))
+                {
+                    message = TakeGuess(message);
+                }
+                else if (endGame.IsMatch(message))
+                {
+                    message = EndSession(message);
+                }
+                else //request is invalid
+                {
+                    message = "BadRequest";
+                }
+
+                /* send response back to client */
+                byte[] response = System.Text.Encoding.ASCII.GetBytes(message);
+                stream.Write(response, 0, response.Length);
+                Console.WriteLine("Sent: {0}", message);
+            }
+
+            // shutdown/clean up
+        }
+
+        /*
+        *  Method  : CreateSession()
+        *  Summary : create a new game session by parsing a string file and using its contents to create a new session instance,  
+        *  Params  : 
+        *     none.
+        *  Return  :  
+        *     string response = a string made up of the scrambled string, number of words to be found, and the session id
+        *     e.g. thisawh|6|NBIO-8346.
+        */
+        public string CreateSession()
+        {
+            string sessionId = Guid.NewGuid().ToString();
             string[] stringFiles = { "1.txt", "2.txt", "3.txt" };
 
             /* randomly choose a scrambled string file */
             Random rand = new Random();
             int randomIndex = rand.Next(0, stringFiles.Length);
-            StreamReader reader =  new StreamReader("../../String files/" + stringFiles[randomIndex]);
+            StreamReader reader = new StreamReader("../../String files/" + stringFiles[randomIndex]);
 
             /* parse info from the file */
             string scrambledString = reader.ReadLine();
@@ -89,21 +159,102 @@ namespace TCPIPServer
                 i++;
             }
 
-            NetworkStream stream = client.GetStream();
-            byte[] dataBytes = new byte[kMaxMessageLength];
-            string message = null;
+            /* create a session for the player */
+            SessionVariables playerSession = new SessionVariables();
+            playerSession.sessionId = sessionId;
+            playerSession.scrambledString = scrambledString;
+            playerSession.wordsList = wordsList;
+            playerSession.numOfWords = numOfWords;
 
-            //while ((stream.Read(dataBytes, 0, dataBytes.Length) != 0)
-            //{
+            playerSessions.Add(playerSession); //add session to list
 
-            //}
+            string response = scrambledString + "|" + numOfWords.ToString() + "|" + sessionId;
+            return response;
+        }
 
+        /*
+        *  Method  : TakeGuess()
+        *  Summary : handle a client guess and update session variables accordingly.  
+        *  Params  : 
+        *     string message = the message from the client containing the command, guess, and session id.
+        *  Return  :  
+        *     string response = a string made up of: a word indicating whether the guess was found in the string or not, the 
+        *     number of words left to guess.
+        */
+        public string TakeGuess(string message)
+        {
+            string[] messageComponents = message.Split('|');
+            SessionVariables tempSession = new SessionVariables();
+            int sessionNumber = 0;
+            string response = string.Empty;
 
+            /* search for player's session */
+            for (int i = 0; i < playerSessions.Count; i++)
+            {
+                if (messageComponents[2] == playerSessions[i].sessionId)
+                {
+                    tempSession = playerSessions[i];
+                    sessionNumber = i;
+                    break;
+                }
+                else if (i == playerSessions.Count - 1) //session does not exist
+                {
+                    response = "SessionNotFound";
+                    return response;
+                }
+            }
 
+            /* determine if the guess was valid or not */
+            for (int i = 0; i < tempSession.wordsList.Length; i++)
+            {
+                if (messageComponents[1] == tempSession.wordsList[i])
+                {
+                    /* update session variables */
+                    tempSession.wordsList[i] = null;
+                    tempSession.numOfWords--;
+                    playerSessions[sessionNumber] = tempSession;
 
+                    response = "Valid|" + tempSession.numOfWords.ToString();
+                    break;
+                }
+                else if (i == tempSession.wordsList.Length - 1) //guess was wrong
+                {
+                    response = "Invalid|" + tempSession.numOfWords.ToString();
+                }
+            }
 
+            return response;
+        }
 
+        /*
+        *  Method  : EndSession()
+        *  Summary : enable use to end active session.  
+        *  Params  : 
+        *     string message = the message from the client containing the command and session id.
+        *  Return  :  
+        *     string response = a response informing the user that the session was ended successfully.
+        */
+        public string EndSession(string message)
+        {
+            string[] messageComponents = message.Split('|');
+            string response = null;
+
+            /* search for player's session */
+            for (int i = 0; i < playerSessions.Count; i++)
+            {
+                if (playerSessions[i].sessionId == messageComponents[1])
+                {
+                    playerSessions.Remove(playerSessions[i]);
+                    response = "SessionDeleted";
+                    break;
+                }
+                else if (i == playerSessions.Count - 1)
+                {
+                    response = "SessionNotFound";
+                }
+            }
+
+            return response;
         }
     }
-
 }

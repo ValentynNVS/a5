@@ -1,6 +1,6 @@
 putestornooffonsihtdnanehwoffnotsetlikedrahmoreknownwodthanandnehtthatknowerehwb
 36
-put
+a
 set
 test
 rot
@@ -25,7 +25,7 @@ own
 do
 and
 end
-a
+put
 i
 then
 hen
