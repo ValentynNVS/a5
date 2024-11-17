@@ -10,6 +10,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Configuration;
+using System.Runtime.InteropServices.ComTypes;
 
 /*
 *   FILE          : GameServer.cs
@@ -18,7 +20,7 @@ using System.Threading.Tasks;
 *   FIRST VERSION : 11/11/2024
 *   DESCRIPTION   :
 *      The class in this file contains the server for the guessing game. It allows clients to connect over TCP/IP and 
-*      play a game of guessing words from a string of scrambled letters.
+*      play a game of word guessing.
 */
 namespace TCPIPServer
 {
@@ -34,9 +36,12 @@ namespace TCPIPServer
         }
 
         public static List<SessionVariables> playerSessions = new List<SessionVariables>(); //list of active sessions
+        private static ServerUI ui = new ServerUI();
 
         /* constants */
         const int kMaxMessageLength = 256;
+        const int port = 13000;
+        const string ipv4Address = "10.0.0.31";
 
         /*
         *  Method  : StartServer()
@@ -48,27 +53,42 @@ namespace TCPIPServer
         */
         internal void StartServer()
         {
-            // initialize port & IP address
-            int port = 13000;
-            IPAddress ipAddress = IPAddress.Parse("10.0.0.31");
-
-            // establish endpoint of connection (socket)
             TcpListener server = null;
-            server = new TcpListener(ipAddress, port);
-            server.Start();
+            bool running = true;
 
-            /* enter listening loop */
-            while (true)
+            //Action<Object> shutDownWorker = shutDownServer;
+            //Task shutDownTask = Task.Factory.StartNew(shutDownWorker, server);
+
+            try
             {
-                // wait for a connection
-                Console.WriteLine("Waiting for a connection...");
-                TcpClient client = server.AcceptTcpClient();
+                // initialize IP address
+                IPAddress ipAddress = IPAddress.Parse(ipv4Address);
 
-                // connection occurred; fire off a task to handle it
-                Console.WriteLine("Connection happened!");
-                Action<Object> gameWorker = GuessingGame;
-                Task gameTask = Task.Factory.StartNew(gameWorker, client);
-                Thread.Sleep(100);
+                // establish endpoint of connection (socket)
+                server = new TcpListener(ipAddress, port);
+                server.Start();
+
+                /* enter listening loop */
+                while (running)
+                {
+                    // wait for a connection
+                    ui.Write("Waiting for a connection...");
+                    TcpClient client = server.AcceptTcpClient();
+
+                    // connection occurred; fire off a task to handle it
+                    ui.Write("Connection happened!");
+                    Action<Object> gameWorker = GuessingGame;
+                    Task gameTask = Task.Factory.StartNew(gameWorker, client);
+                    Thread.Sleep(100);
+                }
+            }
+            catch (Exception e)
+            {
+                ui.Write("Error: " + e + e.Message);
+            }
+            finally
+            {
+                server.Stop();
             }
         }
 
@@ -89,41 +109,53 @@ namespace TCPIPServer
             string message = string.Empty;
             int i;
 
-            /* read request and handle it */
-            while (stream.DataAvailable && (i = stream.Read(request, 0, request.Length)) != 0)
+            try
             {
-                message = System.Text.Encoding.ASCII.GetString(request, 0, i);
-                Console.WriteLine("Received: {0}", message);
+                /* read request and handle it */
+                while (stream.DataAvailable && (i = stream.Read(request, 0, request.Length)) != 0)
+                {
+                    message = System.Text.Encoding.ASCII.GetString(request, 0, i);
+                    ui.Write("Received: " + message);
 
-                Regex startGame = new Regex(@"^CreatePlayerSession$");
-                Regex wordGuess = new Regex(@"^MakeGuess\|\S{1,10}\|\S{36}$");
-                Regex endGame = new Regex(@"^EndPlayerSession\|.{36}$");
+                    Regex startGame = new Regex(@"^CreatePlayerSession$");
+                    Regex wordGuess = new Regex(@"^MakeGuess\|\S{1,10}\|\S{36}$");
+                    Regex endGame = new Regex(@"^EndPlayerSession\|.{36}$");
 
-                /* call appropriate method based on request */
-                if (startGame.IsMatch(message))
-                {
-                    message = CreateSession();
-                }
-                else if (wordGuess.IsMatch(message))
-                {
-                    message = TakeGuess(message);
-                }
-                else if (endGame.IsMatch(message))
-                {
-                    message = EndSession(message);
-                }
-                else //request is invalid
-                {
-                    message = "BadRequest";
-                }
+                    /* call appropriate method based on request */
+                    if (startGame.IsMatch(message))
+                    {
+                        message = CreateSession();
+                    }
+                    else if (wordGuess.IsMatch(message))
+                    {
+                        message = TakeGuess(message);
+                    }
+                    else if (endGame.IsMatch(message))
+                    {
+                        message = EndSession(message);
+                    }
+                    else //request is invalid
+                    {
+                        message = "BadRequest";
+                    }
 
-                /* send response back to client */
-                byte[] response = System.Text.Encoding.ASCII.GetBytes(message);
-                stream.Write(response, 0, response.Length);
-                Console.WriteLine("Sent: {0}", message);
+                    /* send response back to client */
+                    byte[] response = System.Text.Encoding.ASCII.GetBytes(message);
+                    stream.Write(response, 0, response.Length);
+                    ui.Write("Sent: " + message);
+                }
             }
-
-            // shutdown/clean up
+            catch (Exception e)
+            {
+                ui.Write("Error: " + e + e.Message);
+            }
+            finally
+            {
+                if (client.Connected)
+                {
+                    client.Close();
+                }
+            }
         }
 
         /*
@@ -141,9 +173,9 @@ namespace TCPIPServer
             string[] stringFiles = { "1.txt", "2.txt", "3.txt" };
 
             /* randomly choose a scrambled string file */
-            Random rand = new Random();
-            int randomIndex = rand.Next(0, stringFiles.Length);
-            StreamReader reader = new StreamReader("../../String files/" + stringFiles[randomIndex]);
+            Random randomNumber = new Random();
+            int randomIndex = randomNumber.Next(0, stringFiles.Length);
+            StreamReader reader = new StreamReader(ConfigurationManager.AppSettings["stringsPath"] + stringFiles[randomIndex]);
 
             /* parse info from the file */
             string scrambledString = reader.ReadLine();
@@ -157,7 +189,7 @@ namespace TCPIPServer
                 i++;
             }
 
-            /* create a session for the player */
+            /* create a session for the client */
             SessionVariables playerSession = new SessionVariables();
             playerSession.sessionId = sessionId;
             playerSession.scrambledString = scrambledString;
@@ -265,5 +297,23 @@ namespace TCPIPServer
             if (playerSessions.Count > 0) { return true; }
             else { return false; }
         }
+
+        //public void shutDownServer(object o)
+        //{
+        //    TcpListener server = (TcpListener)o;
+        //    Console.WriteLine("ac");
+        //    string message = Console.ReadLine();
+
+        //    if (message == "shutdown")
+        //    {
+        //        for (int i = 0; i < playerSessions.Count; i++)
+        //        {
+        //            byte[] response = System.Text.Encoding.ASCII.GetBytes(message);
+        //            stream.Write(response, 0, response.Length);
+        //            ui.Write("Sent: " + message);
+        //        }
+        //        server.Stop();
+        //    }
+        //}
     }
 }
