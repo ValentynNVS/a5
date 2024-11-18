@@ -26,7 +26,7 @@ namespace TCPIPServer
 {
     internal class GameServer
     {
-        //to hold the details of a session
+        //to hold the details of a session /
         public struct SessionVariables
         {
             public string sessionId;
