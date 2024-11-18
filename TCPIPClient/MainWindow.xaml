@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Word Guessing Game" 
         Width="600" Height="450"
-        MinWidth="800" MinHeight="850"
+        MinWidth="1200" MinHeight="850"
         Background="#FFB5CEFF">
 
     <Window.Resources>

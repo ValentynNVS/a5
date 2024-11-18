@@ -27,49 +27,125 @@ namespace TCPIPClient
             _timer.Tick += Timer_Tick; // Event handler to update timer
         }
 
-        private async void ConnectButton_Click(object sender, RoutedEventArgs e)
+       private async void ConnectButton_Click(object sender, RoutedEventArgs e)
+{
+    try
+    {
+        // Read and trim input fields
+        string ipAddress = IpAddressTextBox.Text.Trim();
+        string portText = PortTextBox.Text.Trim();
+        _userName = NameTextBox.Text.Trim();
+        string timeLimitText = TimeLimitTextBox.Text.Trim();
+
+        // Validate inputs using string.IsNullOrWhiteSpace
+        if (string.IsNullOrWhiteSpace(ipAddress) || string.IsNullOrWhiteSpace(portText) || string.IsNullOrWhiteSpace(_userName) || string.IsNullOrWhiteSpace(timeLimitText))
         {
-            string ipAddress = IpAddressTextBox.Text.Trim();
-            string portText = PortTextBox.Text.Trim();
-            _userName = NameTextBox.Text.Trim();
-            string timeLimitText = TimeLimitTextBox.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(ipAddress) || string.IsNullOrWhiteSpace(portText) || string.IsNullOrWhiteSpace(_userName) || string.IsNullOrWhiteSpace(timeLimitText))
-            {
-                MessageBox.Show("Please fill in all fields before connecting.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (!int.TryParse(portText, out int port) || !int.TryParse(timeLimitText, out _timeLimit) || _timeLimit <= 0)
-            {
-                MessageBox.Show("Invalid port or time limit. Please enter valid numeric values.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
-                _client = new TcpClient(ipAddress, port);
-                _networkStream = _client.GetStream();
-                _isConnected = true;
-
-                Byte[] data = Encoding.ASCII.GetBytes("CreatePlayerSession");
-                _networkStream.Write(data, 0, data.Length);
-
-                StatusTextBlock.Text = $"Status: Connected to {ipAddress}:{port}";
-                MessageBox.Show("Connected to server successfully!", "Connection Status", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // Start the timer with the time limit
-                _timeRemaining = _timeLimit;
-                _timer.Start();
-
-                // Listen for server messages
-                await Task.Run(() => ListenForServerMessages());
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to connect to server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            MessageBox.Show("Please fill in all fields before connecting.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
         }
+
+        // Validate numeric inputs using TryParse
+        if (!int.TryParse(portText, out int port) || !int.TryParse(timeLimitText, out _timeLimit) || port <= 0 || _timeLimit <= 0)
+        {
+            MessageBox.Show("Invalid port or time limit. Please enter valid positive numeric values.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Create a TcpClient
+        _client = new TcpClient(ipAddress, port);
+
+        // Get a network stream for reading and writing
+        _networkStream = _client.GetStream();
+
+        // Translate the message into ASCII and store it as a byte array
+        Byte[] data = System.Text.Encoding.ASCII.GetBytes("CreatePlayerSession");
+
+        // Send the message to the connected server
+        _networkStream.Write(data, 0, data.Length);
+        Console.WriteLine("Sent: CreatePlayerSession");
+
+        // Buffer to store the response bytes
+        data = new Byte[256];
+
+        // String to store the response ASCII representation
+        string responseData = string.Empty;
+
+        // Read the response bytes
+        Int32 bytes = await _networkStream.ReadAsync(data, 0, data.Length);
+        responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+        Console.WriteLine("Received: {0}", responseData);
+        TargetWordTextBlock.Text = $"Target Word: {responseData}";
+
+                // Process session ID
+         sessionId = responseData;
+        _isConnected = true;
+
+        // Update UI
+        StatusTextBlock.Text = $"Status: Connected to {ipAddress}:{port}";
+        MessageBox.Show("Connected to server successfully!", "Connection Status", MessageBoxButton.OK, MessageBoxImage.Information);
+
+        // Start the timer with the time limit
+        _timeRemaining = _timeLimit;
+        _timer.Start();
+
+        // Listen for server messages
+        await Task.Run(() => ListenForServerMessages());
+    }
+    catch (ArgumentNullException ex)
+    {
+        Console.WriteLine("ArgumentNullException: {0}", ex);
+    }
+    catch (SocketException ex)
+    {
+        Console.WriteLine("SocketException: {0}", ex);
+        MessageBox.Show($"Failed to connect to server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Unexpected error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+}
+
+    //string ipAddress = IpAddressTextBox.Text.Trim();
+    //string portText = PortTextBox.Text.Trim();
+    //_userName = NameTextBox.Text.Trim();
+    //string timeLimitText = TimeLimitTextBox.Text.Trim();
+
+    //if (string.IsNullOrWhiteSpace(ipAddress) || string.IsNullOrWhiteSpace(portText) || string.IsNullOrWhiteSpace(_userName) || string.IsNullOrWhiteSpace(timeLimitText))
+    //{
+    //    MessageBox.Show("Please fill in all fields before connecting.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+    //    return;
+    //}
+
+    //if (!int.TryParse(portText, out int port) || !int.TryParse(timeLimitText, out _timeLimit) || _timeLimit <= 0)
+    //{
+    //    MessageBox.Show("Invalid port or time limit. Please enter valid numeric values.", "Input Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+    //    return;
+    //}
+
+    //try
+    //{
+    //    _client = new TcpClient(ipAddress, port);
+    //    _networkStream = _client.GetStream();
+    //    _isConnected = true;
+
+    //    Byte[] data = Encoding.ASCII.GetBytes("CreatePlayerSession");
+    //    _networkStream.Write(data, 0, data.Length);
+
+    //    StatusTextBlock.Text = $"Status: Connected to {ipAddress}:{port}";
+    //    MessageBox.Show("Connected to server successfully!", "Connection Status", MessageBoxButton.OK, MessageBoxImage.Information);
+
+    //    // Start the timer with the time limit
+    //    _timeRemaining = _timeLimit;
+    //    _timer.Start();
+
+    //    // Listen for server messages
+    //    await Task.Run(() => ListenForServerMessages());
+    //}
+    //catch (Exception ex)
+    //{
+    //    MessageBox.Show($"Failed to connect to server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+    //}
 
         private void Timer_Tick(object sender, EventArgs e)
         {
@@ -144,11 +220,19 @@ namespace TCPIPClient
                 string request = "MakeGuess|" + guess + "|" + sessionId;
                 byte[] dataToSend = Encoding.ASCII.GetBytes(request);
 
-                _networkStream.Write(dataToSend, 0, dataToSend.Length);
+                // Send the guess asynchronously
+                await _networkStream.WriteAsync(dataToSend, 0, dataToSend.Length);
                 Console.WriteLine($"Sent: {guess}");
 
-                byte[] buffer = new byte[256];
-                int bytesRead = _networkStream.Read(buffer, 0, buffer.Length);
+                if (!_client.Connected)
+                {
+                    throw new InvalidOperationException("The client is not connected to the server.");
+                }
+                // Buffer to store the server's response
+                byte[] buffer = new byte[2048];
+                int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
+
+                // Process the server's response
                 string response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
 
                 if (response.Contains("SessionNotFound"))
@@ -158,7 +242,7 @@ namespace TCPIPClient
                 else
                 {
                     string[] responseComponents = response.Split('|');
-                    ResultTextBlock.Text = $"Server Response: {responseComponents[0] + responseComponents[1]}";
+                    ResultTextBlock.Text = $"Server Response: {responseComponents[0]} {responseComponents[1]}";
                 }
             }
             catch (Exception ex)
@@ -166,6 +250,7 @@ namespace TCPIPClient
                 MessageBox.Show($"Error during communication: {ex.Message}", "Communication Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
