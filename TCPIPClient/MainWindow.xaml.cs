@@ -205,7 +205,7 @@ namespace TCPIPClient
                 _isConnected = false;
                 StatusTextBlock.Text = "Status: Disconnected";
                 TimerTextBlock.Text = "N/A";
-            });
+            };
         }
 
         private void Window_Closed(object sender, EventArgs e)
