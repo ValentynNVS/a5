@@ -40,8 +40,8 @@ namespace TCPIPServer
 
         /* constants */
         const int kMaxMessageLength = 256;
-        const int port = 63960;
-        const string ipv4Address = "192.168.0.36";
+        const int port = 49448;
+        const string ipv4Address = "10.144.98.210";
 
         /*
         *  Method  : StartServer()
