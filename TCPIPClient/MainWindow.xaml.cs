@@ -44,6 +44,7 @@ namespace TCPIPClient
 
             try
             {
+                // Start connection
                 _client = new TcpClient(ipAddress, port);
                 _networkStream = _client.GetStream();
                 _isConnected = true;
@@ -51,7 +52,10 @@ namespace TCPIPClient
                 StatusTextBlock.Text = $"Status: Connected to {ipAddress}:{port}";
                 MessageBox.Show("Connected to server successfully!", "Connection Status", MessageBoxButton.OK, MessageBoxImage.Information);
 
+                // Start game timer
                 StartGameTimer();
+
+                // Start listening for server messages
                 await Task.Run(() => ListenForServerMessages());
             }
             catch (Exception ex)
@@ -100,6 +104,7 @@ namespace TCPIPClient
             {
                 try
                 {
+                    // Wait for server response asynchronously
                     int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
                     if (bytesRead > 0)
                     {
@@ -107,16 +112,17 @@ namespace TCPIPClient
                         string[] messageComponents = serverMessage.Split('|');
                         sessionId = messageComponents.Length > 2 ? messageComponents[2] : null;
 
+                        // Update the UI on the main thread
                         Dispatcher.Invoke(() =>
                         {
                             if (messageComponents.Length > 1)
                             {
-                                TargetWordTextBlock.Text = messageComponents[0]; // Display the string users need to work with
+                                TargetWordTextBlock.Text = messageComponents[0]; // Update the target word
                                 ResultTextBlock.Text = messageComponents[1];     // Display the server's response
                             }
                             else
                             {
-                                ResultTextBlock.Text = $"Server: {serverMessage}";
+                                ResultTextBlock.Text = $"Server: {serverMessage}"; // Display any other server messages
                             }
                         });
                     }
@@ -150,15 +156,18 @@ namespace TCPIPClient
 
             try
             {
+                // Send the guess to the server
                 string request = $"MakeGuess|{guess}|{sessionId}";
                 byte[] dataToSend = Encoding.ASCII.GetBytes(request);
 
+                // Send the data to the server
                 await _networkStream.WriteAsync(dataToSend, 0, dataToSend.Length);
 
                 byte[] buffer = new byte[256];
                 int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
                 string response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
 
+                // Update the UI with the server's response
                 Dispatcher.Invoke(() =>
                 {
                     ResultTextBlock.Text = $"Server Response: {response}";
