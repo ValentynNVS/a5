@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Markup;
+using System.Windows.Threading;
 
 namespace TCPIPClient
 {
@@ -16,12 +17,17 @@ namespace TCPIPClient
         private NetworkStream _networkStream;
         private string _userName;
         private int _timeLimit;
-        private string sessionId;//
+        private string sessionId;
         private bool _isConnected = false;
+        private DispatcherTimer _timer; // Timer for countdown
+        private int _timeRemaining;
 
         public MainWindow()
         {
             InitializeComponent();
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromSeconds(1); // Update every second
+            _timer.Tick += Timer_Tick; // Event handler to update timer
         }
 
         private async void ConnectButton_Click(object sender, RoutedEventArgs e)
@@ -45,23 +51,41 @@ namespace TCPIPClient
 
             try
             {
-                _client = new TcpClient();
-                Byte[] data = System.Text.Encoding.ASCII.GetBytes("CreatePlayerSession");//
-                _client = new TcpClient(ipAddress, port);//
-                //await _client.ConnectAsync(ipAddress, port);
+                _client = new TcpClient(ipAddress, port);
                 _networkStream = _client.GetStream();
                 _isConnected = true;
 
-                _networkStream.Write(data, 0, data.Length);//
+                Byte[] data = Encoding.ASCII.GetBytes("CreatePlayerSession");
+                _networkStream.Write(data, 0, data.Length);
 
                 StatusTextBlock.Text = $"Status: Connected to {ipAddress}:{port}";
                 MessageBox.Show("Connected to server successfully!", "Connection Status", MessageBoxButton.OK, MessageBoxImage.Information);
 
+                // Start the timer with the time limit
+                _timeRemaining = _timeLimit;
+                _timer.Start();
+
+                // Listen for server messages
                 await Task.Run(() => ListenForServerMessages());
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to connect to server: {ex.Message}", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (_timeRemaining > 0)
+            {
+                _timeRemaining--;
+                TimerTextBlock.Text = $"Time Remaining: {_timeRemaining} sec";
+            }
+            else
+            {
+                _timer.Stop();
+                MessageBox.Show("Time is up!", "Game Over", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Optionally, end the game or handle the timeout
             }
         }
 
@@ -76,8 +100,17 @@ namespace TCPIPClient
                     if (bytesRead > 0)
                     {
                         string serverMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                        string[] messageComponents = serverMessage.Split('|');//
-                        sessionId = messageComponents[2];//
+                        string[] messageComponents = serverMessage.Split('|');
+
+                        if (messageComponents.Length > 2 && messageComponents[0] == "TargetWord")
+                        {
+                            // The server sends the target word
+                            string targetWord = messageComponents[1];
+                            Dispatcher.Invoke(() => TargetWordTextBlock.Text = $"Target Word: {targetWord}");
+                        }
+
+                        sessionId = messageComponents[2]; // Example for session ID extraction
+
                         Dispatcher.Invoke(() => ResultTextBlock.Text = $"Server: {serverMessage}");
                     }
                 }
@@ -110,32 +143,26 @@ namespace TCPIPClient
 
             try
             {
-                string request = "MakeGuess|" + guess + "|" + sessionId;//
+                string request = "MakeGuess|" + guess + "|" + sessionId;
                 byte[] dataToSend = Encoding.ASCII.GetBytes(request);
 
-                // Send data
-
-                _client = new TcpClient("10.0.0.31", 13000);
-                _networkStream = _client.GetStream();//
-                _networkStream.Write(dataToSend, 0, dataToSend.Length);//
-                //await _networkStream.WriteAsync(dataToSend, 0, dataToSend.Length);
+                _networkStream.Write(dataToSend, 0, dataToSend.Length);
                 Console.WriteLine($"Sent: {guess}");
 
                 // Receive response
                 byte[] buffer = new byte[256];
-                int bytesRead = _networkStream.Read(buffer, 0, buffer.Length);//
-                //int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
+                int bytesRead = _networkStream.Read(buffer, 0, buffer.Length);
                 string response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
 
                 if (response.Contains("SessionNotFound"))
                 {
-                    ResultTextBlock.Text = $"Server Response: {response}"; //
+                    ResultTextBlock.Text = $"Server Response: {response}";
                 }
                 else
                 {
-                    string[] responseComponents = response.Split('|');//
-                    ResultTextBlock.Text = $"Server Response: {responseComponents[0] + responseComponents[1]}";//
-                }    
+                    string[] responseComponents = response.Split('|');
+                    ResultTextBlock.Text = $"Server Response: {responseComponents[0] + responseComponents[1]}";
+                }
             }
             catch (Exception ex)
             {
@@ -145,7 +172,6 @@ namespace TCPIPClient
 
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
-            // make sure client is connected first
             if (!_isConnected)
             {
                 MessageBox.Show("You are not connected to the server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -162,16 +188,14 @@ namespace TCPIPClient
         {
             if (_client != null)
             {
-                string closingMessage = "EndPlayerSession|" + sessionId;//
-                Byte[] closeRequest = System.Text.Encoding.ASCII.GetBytes(closingMessage);//
+                string closingMessage = "EndPlayerSession|" + sessionId;
+                byte[] closeRequest = Encoding.ASCII.GetBytes(closingMessage);
 
-                _client = new TcpClient("10.0.0.31", 13000);//
-                _networkStream = _client.GetStream();//
-                _networkStream.Write(closeRequest, 0, closeRequest.Length);//
+                _networkStream.Write(closeRequest, 0, closeRequest.Length);
 
-                closeRequest = new Byte[256];//
-                int bytes = _networkStream.Read(closeRequest, 0, closeRequest.Length);//
-                string responseMessage = System.Text.Encoding.ASCII.GetString(closeRequest, 0, bytes);//
+                byte[] buffer = new byte[256];
+                int bytes = _networkStream.Read(buffer, 0, buffer.Length);
+                string responseMessage = Encoding.ASCII.GetString(buffer, 0, bytes);
 
                 _networkStream?.Close();
                 _client.Close();
