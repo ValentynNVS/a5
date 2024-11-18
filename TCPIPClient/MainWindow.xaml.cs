@@ -1,8 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -96,6 +93,7 @@ namespace TCPIPClient
             {
                 try
                 {
+                    // Wait for server response asynchronously
                     int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
                     if (bytesRead > 0)
                     {
@@ -149,7 +147,6 @@ namespace TCPIPClient
                 _networkStream.Write(dataToSend, 0, dataToSend.Length);
                 Console.WriteLine($"Sent: {guess}");
 
-                // Receive response
                 byte[] buffer = new byte[256];
                 int bytesRead = _networkStream.Read(buffer, 0, buffer.Length);
                 string response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
@@ -184,6 +181,12 @@ namespace TCPIPClient
             }
         }
 
+        private void EndGame(string message)
+        {
+            Disconnect();
+            MessageBox.Show(message, "Game Over", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
         private void Disconnect()
         {
             if (_client != null)
@@ -201,8 +204,8 @@ namespace TCPIPClient
                 _client.Close();
                 _isConnected = false;
                 StatusTextBlock.Text = "Status: Disconnected";
-                MessageBox.Show("Disconnected from server.", "Connection Status", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+                TimerTextBlock.Text = "N/A";
+            });
         }
 
         private void Window_Closed(object sender, EventArgs e)
