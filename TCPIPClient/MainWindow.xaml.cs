@@ -14,6 +14,7 @@ namespace TCPIPClient
     public partial class MainWindow : Window
     {
         static string sessionId;
+        static bool connected;
 
         public MainWindow()
         {
@@ -58,6 +59,7 @@ namespace TCPIPClient
             TargetWordTextBlock.Text = responseData;
             sessionId = responseData.Split('|')[2];
             Console.WriteLine("Received: {0}", responseData);
+            connected = true;
 
             // Close everything.
             stream.Close();
@@ -66,6 +68,11 @@ namespace TCPIPClient
 
         private void SubmitGuessButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!connected)
+            {
+                MessageBox.Show("You are not connected to a server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             // Create a TcpClient.
             // Note, for this client to work you need to have a TcpServer 
             // connected to the same address as specified by the server, port
