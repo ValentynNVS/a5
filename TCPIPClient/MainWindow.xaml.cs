@@ -113,6 +113,9 @@ namespace TCPIPClient
             TimeLimitTextBox.IsEnabled = false;
             ConnectButton.IsEnabled = false;
             StartTimer(timeRemaining);
+
+            ResultTextBlock.Text = "The game is on";
+            ResultTextBlock.Foreground =    new SolidColorBrush(Colors.Green);
             // Close everything.
             stream.Close();
             client.Close();
@@ -252,6 +255,13 @@ namespace TCPIPClient
             TargetWordTextBlock.Text = responseData;
             Console.WriteLine("Received: {0}", responseData);
 
+            IpAddressTextBox.IsEnabled = true;
+            PortTextBox.IsEnabled = true;
+            NameTextBox.IsEnabled = true;
+            TimeLimitTextBox.IsEnabled = true;
+            ConnectButton.IsEnabled = true;
+            ResultTextBlock.Text = "The game is stopped";
+            ResultTextBlock.Foreground = new SolidColorBrush(Colors.Red);
             // Close everything.
             stream.Close();
             client.Close();
