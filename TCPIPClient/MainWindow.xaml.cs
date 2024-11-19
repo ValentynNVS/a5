@@ -35,7 +35,34 @@ namespace TCPIPClient
                 return;
             }
             String server = IpAddressTextBox.Text;
-            TcpClient client = new TcpClient(server, port);
+            String name = NameTextBox.Text;
+            Int32 timeLimit;
+            Int32.TryParse(TimeLimitTextBox.Text, out timeLimit);
+
+            if (server == "" || port == 0 || name == "" || timeLimit == 0)
+            {
+                MessageBox.Show("Please fill in info first.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            TcpClient client = new TcpClient();
+            try
+            {
+                client = new TcpClient(server, port);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error connecting.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (client.Connected)
+                {
+                    client.Close();
+                }
+            }
+
+            if (!client.Connected)
+            {
+                return; 
+            }
 
             // Translate the passed message into ASCII and store it as a Byte array.
             String message = "CreatePlayerSession";
@@ -65,6 +92,7 @@ namespace TCPIPClient
             TargetWordTextBlock.Text = responseData;
             sessionId = responseData.Split('|')[2];
             Console.WriteLine("Received: {0}", responseData);
+            connected = true;
 
             if (!Int32.TryParse(TimeLimitTextBox.Text, out timeRemaining) || timeRemaining <= 0)
             {
@@ -79,6 +107,11 @@ namespace TCPIPClient
 
         private void SubmitGuessButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!connected)
+            {
+                MessageBox.Show("You are not connected to a server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             // Create a TcpClient.
             // Note, for this client to work you need to have a TcpServer 
             // connected to the same address as specified by the server, port
