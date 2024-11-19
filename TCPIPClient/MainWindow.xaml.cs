@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Threading;
 using System.Timers;
+using System.Windows.Media;
 
 namespace TCPIPClient
 {
@@ -18,7 +19,6 @@ namespace TCPIPClient
         static bool connected;
         private DispatcherTimer gameTimer; // Timer for UI thread updates
         private int timeRemaining; // Tracks remaining time
-        static bool connected;
 
         public MainWindow()
         {
@@ -105,6 +105,12 @@ namespace TCPIPClient
             }
             TargetWordTextBlock.Text = "Target word received successfully!";
             TargetWordTextBlock1.Text = responseData;
+            StatusTextBlock.Text = "Status: Connected";
+            StatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
+            IpAddressTextBox.IsEnabled = false;
+            PortTextBox.IsEnabled = false;
+            NameTextBox.IsEnabled = false;
+            TimeLimitTextBox.IsEnabled = false;
             StartTimer(timeRemaining);
             // Close everything.
             stream.Close();
