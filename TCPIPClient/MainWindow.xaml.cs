@@ -27,9 +27,26 @@ namespace TCPIPClient
             // Note, for this client to work you need to have a TcpServer 
             // connected to the same address as specified by the server, port
             // combination.
-            Int32 port = 13000;
+            Int32 port = 0;
+            Int32.TryParse(PortTextBox.Text, out port);
             String server = IpAddressTextBox.Text;
+            String name = NameTextBox.Text;
+            Int32 timeLimit;
+            Int32.TryParse(TimeLimitTextBox.Text, out timeLimit);
+
+            if (server == "" || port == 0 || name == "" || timeLimit == 0)
+            {
+                MessageBox.Show("Please fill in info first.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             TcpClient client = new TcpClient(server, port);
+
+            if (client.Connected == false)
+            {
+                MessageBox.Show("Unable to connect.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             // Translate the passed message into ASCII and store it as a Byte array.
             String message = "CreatePlayerSession";
