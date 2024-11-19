@@ -277,6 +277,39 @@ namespace TCPIPClient
 
         private void ResetGame()
         {
+            Int32 port = 0;
+            Int32.TryParse(PortTextBox.Text, out port);
+            String server = IpAddressTextBox.Text;
+            TcpClient client = new TcpClient(server, port);
+
+            // Translate the passed message into ASCII and store it as a Byte array.
+            String message = "EndPlayerSession|" + sessionId;
+            Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
+
+            // Get a client stream for reading and writing.
+            //  Stream stream = client.GetStream();
+
+            NetworkStream stream = client.GetStream();
+
+            // Send the message to the connected TcpServer. 
+            stream.Write(data, 0, data.Length);
+
+            Console.WriteLine("Sent: {0}", message);
+
+            // Receive the TcpServer.response.
+
+            // Buffer to store the response bytes.
+            data = new Byte[256];
+
+            // String to store the response ASCII representation.
+            String responseData = String.Empty;
+
+            // Read the first batch of the TcpServer response bytes.
+            Int32 bytes = stream.Read(data, 0, data.Length);
+            responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+            TargetWordTextBlock.Text = responseData;
+            Console.WriteLine("Received: {0}", responseData);
+
             IpAddressTextBox.IsEnabled = true;
             PortTextBox.IsEnabled = true;
             NameTextBox.IsEnabled = true;
@@ -288,6 +321,8 @@ namespace TCPIPClient
             StatusTextBlock.Foreground = new SolidColorBrush(Colors.Red);
             gameTimer.Stop();
             // Close everything.
+            stream.Close();
+            client.Close();
 
             connected = false;
 
@@ -300,14 +335,12 @@ namespace TCPIPClient
 
             if (result == MessageBoxResult.Yes)
             {
-                // Reset the game for a new round
-                EndGameButton_Click(this, new RoutedEventArgs());
-                ResetGame();
+                ConnectButton_Click(this, new RoutedEventArgs());
             }
             else
             {
                 // Stop the game and disconnect
-                EndGameButton_Click(this, new RoutedEventArgs());
+                ResetGame();
             }
         }
         private void finishGameQuestion()
