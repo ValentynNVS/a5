@@ -40,8 +40,8 @@ namespace TCPIPServer
 
         /* constants */
         const int kMaxMessageLength = 256;
-        const int port = 55183;
-        const string ipv4Address = "10.179.16.204";
+        const int port = 13000;
+        const string ipv4Address = "10.0.0.31";
 
         /*
         *  Method  : StartServer()
@@ -56,8 +56,8 @@ namespace TCPIPServer
             TcpListener server = null;
             bool running = true;
 
-            //Action<Object> shutDownWorker = shutDownServer;
-            //Task shutDownTask = Task.Factory.StartNew(shutDownWorker, server);
+            Action<Object> shutDownWorker = shutDownServer;
+            Task shutDownTask = Task.Factory.StartNew(shutDownWorker, server);
 
             try
             {
@@ -299,22 +299,23 @@ namespace TCPIPServer
             else { return false; }
         }
 
-        //public void shutDownServer(object o)
-        //{
-        //    TcpListener server = (TcpListener)o;
-        //    Console.WriteLine("ac");
-        //    string message = Console.ReadLine();
+        public void shutDownServer(object o)
+        {
+            TcpListener server = (TcpListener)o;
+            Console.WriteLine("shutdown to stop");
+            NetworkStream stream = client.GetStream();
+            string message = Console.ReadLine();
 
-        //    if (message == "shutdown")
-        //    {
-        //        for (int i = 0; i < playerSessions.Count; i++)
-        //        {
-        //            byte[] response = System.Text.Encoding.ASCII.GetBytes(message);
-        //            stream.Write(response, 0, response.Length);
-        //            ui.Write("Sent: " + message);
-        //        }
-        //        server.Stop();
-        //    }
-        //}
+            if (message == "shutdown")
+            {
+                for (int i = 0; i < playerSessions.Count; i++)
+                {
+                    byte[] response = System.Text.Encoding.ASCII.GetBytes(message);
+                    stream.Write(response, 0, response.Length);
+                    ui.Write("Sent: " + message);
+                }
+                server.Stop();
+            }
+        }
     }
 }
