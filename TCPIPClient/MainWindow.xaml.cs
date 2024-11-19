@@ -230,15 +230,12 @@ namespace TCPIPClient
 
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
-           if (timeRemaining > 0)
-            {
                 if (finishGameQuestion() == false)
                 {
                     return;
                 }
-            }
 
-            else
+           else
             {
                 // Create a TcpClient.
                 // Note, for this client to work you need to have a TcpServer 
