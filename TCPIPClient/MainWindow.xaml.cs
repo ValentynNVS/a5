@@ -17,6 +17,7 @@ namespace TCPIPClient
         static string sessionId;
         private DispatcherTimer gameTimer; // Timer for UI thread updates
         private int timeRemaining; // Tracks remaining time
+        static bool connected;
 
         public MainWindow()
         {
@@ -99,6 +100,8 @@ namespace TCPIPClient
                 MessageBox.Show("Please enter a valid time limit in seconds.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+            TargetWordTextBlock.Text = "Target word received successfully!";
+            TargetWordTextBlock1.Text = responseData;
             StartTimer(timeRemaining);
             // Close everything.
             stream.Close();

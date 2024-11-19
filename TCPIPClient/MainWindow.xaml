@@ -73,6 +73,7 @@
             <StackPanel>
                 <TextBlock Text="Game Controls" FontSize="16" FontWeight="Bold" Foreground="#FF959A8E"/>
                 <TextBlock Name ="TargetWordInfo" Text="Target Word:"/>
+                <TextBlock Name="TargetWordTextBlock1" Text="Wait for the word to be displayed" FontWeight="Bold" FontSize="16" Foreground="#BF616A" Margin="0,5,0,15"/>
                 <TextBlock Name="TargetWordTextBlock" Text="N/A" FontWeight="Bold" FontSize="16" Foreground="#BF616A" Margin="0,5,0,15"/>
                 <TextBlock Text="Enter a Word Guess:"/>
                 <TextBox Name="GuessTextBox" Width="300"/>
