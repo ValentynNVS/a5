@@ -211,15 +211,22 @@ namespace TCPIPClient
             {
                 gameTimer.Stop();
                 TimerTextBlock.Text = "Time's up!";
-                ShowEndGameDialog();
+                EndGameButton_Click(this, new RoutedEventArgs());
             }
         }
 
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
-                finishGameQuestion();
-
-
+            if (!connected)
+            {
+                MessageBox.Show("You are not connected to a server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            MessageBoxResult mbResult = MessageBox.Show("Are you sure you want to exit.", "Connection Error", MessageBoxButton.YesNo);
+            if (mbResult == MessageBoxResult.No)
+            {
+                return;
+            }
             // Create a TcpClient.
             // Note, for this client to work you need to have a TcpServer 
             // connected to the same address as specified by the server, port
@@ -266,7 +273,6 @@ namespace TCPIPClient
             ResultTextBlock.Foreground = new SolidColorBrush(Colors.Red);
             StatusTextBlock.Text = "Status: Disconnected";
             StatusTextBlock.Foreground =   new SolidColorBrush(Colors.Red);
-            gameTimer.Stop();
             // Close everything.
             stream.Close();
             client.Close();
