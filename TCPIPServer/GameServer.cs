@@ -43,6 +43,9 @@ namespace TCPIPServer
         const int port = 55457;
         const string ipv4Address = "10.179.16.204";
 
+        const int clientPort = 13001;
+        const string clientIpv4Address = "10.0.0.41";
+        volatile bool running = true;
         /*
         *  Method  : StartServer()
         *  Summary : initialize the server and start listening for client requests.
@@ -54,7 +57,7 @@ namespace TCPIPServer
         internal void StartServer()
         {
             TcpListener server = null;
-            bool running = true;
+            //bool running = true;
 
             Action<Object> shutDownWorker = shutDownServer;
             Task shutDownTask = Task.Factory.StartNew(shutDownWorker, server);
@@ -80,7 +83,6 @@ namespace TCPIPServer
                     Action<Object> gameWorker = GuessingGame;
                     Task gameTask = Task.Factory.StartNew(gameWorker, client);
                     Thread.Sleep(100);
-
                 }
             }
             catch (Exception e)
@@ -303,18 +305,21 @@ namespace TCPIPServer
         {
             TcpListener server = (TcpListener)o;
             Console.WriteLine("shutdown to stop");
-            NetworkStream stream = client.GetStream();
-            string message = Console.ReadLine();
+            string command = Console.ReadLine();
 
-            if (message == "shutdown")
+            //TcpClient client = new TcpClient(clientIpv4Address, clientPort);
+            //NetworkStream stream = client.GetStream();
+            string message = "Server is shutting down!";
+
+            if (command == "shutdown")
             {
                 for (int i = 0; i < playerSessions.Count; i++)
                 {
-                    byte[] response = System.Text.Encoding.ASCII.GetBytes(message);
-                    stream.Write(response, 0, response.Length);
+                    byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
+                    //stream.Write(data, 0, data.Length);
                     ui.Write("Sent: " + message);
                 }
-                server.Stop();
+                running = false;
             }
         }
     }
