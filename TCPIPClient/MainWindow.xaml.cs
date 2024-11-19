@@ -269,6 +269,7 @@ namespace TCPIPClient
             ResultTextBlock.Foreground = new SolidColorBrush(Colors.Red);
             StatusTextBlock.Text = "Status: Disconnected";
             StatusTextBlock.Foreground =   new SolidColorBrush(Colors.Red);
+            gameTimer.Stop();
             // Close everything.
             stream.Close();
             client.Close();
