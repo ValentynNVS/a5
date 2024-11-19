@@ -40,6 +40,7 @@ namespace TCPIPClient
             if (connected)
             {
                 MessageBox.Show("Already connected.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
             if (server == "" || port == 0 || name == "" || timeLimit == 0)
             {
