@@ -222,7 +222,11 @@ namespace TCPIPClient
                 MessageBox.Show("You are not connected to a server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
+            MessageBoxResult mbResult = MessageBox.Show("Are you sure you want to exit.", "Connection Error", MessageBoxButton.YesNo);
+            if (mbResult == MessageBoxResult.No)
+            {
+                return;
+            }
             // Create a TcpClient.
             // Note, for this client to work you need to have a TcpServer 
             // connected to the same address as specified by the server, port
