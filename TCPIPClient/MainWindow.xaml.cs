@@ -111,6 +111,7 @@ namespace TCPIPClient
             PortTextBox.IsEnabled = false;
             NameTextBox.IsEnabled = false;
             TimeLimitTextBox.IsEnabled = false;
+            ConnectButton.IsEnabled = false;
             StartTimer(timeRemaining);
             // Close everything.
             stream.Close();

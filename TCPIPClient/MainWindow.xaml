@@ -63,7 +63,7 @@
                     <TextBlock Text="Time Limit (sec):" Width="100"/>
                     <TextBox Name="TimeLimitTextBox" Width="100" TextChanged="TimeLimitTextBox_TextChanged"/>
                 </StackPanel>
-                <Button Content="Connect" Click="ConnectButton_Click"/>
+                <Button Name="ConnectButton" Content="Connect" Click="ConnectButton_Click"/>
                 <TextBlock Name="StatusTextBlock" Text="Status: Disconnected" Foreground="#D08770" Margin="0,10,0,0"/>
             </StackPanel>
         </Border>
