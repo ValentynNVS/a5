@@ -262,6 +262,8 @@ namespace TCPIPClient
             ConnectButton.IsEnabled = true;
             ResultTextBlock.Text = "The game is stopped";
             ResultTextBlock.Foreground = new SolidColorBrush(Colors.Red);
+            StatusTextBlock.Text = "Status: Disconnected";
+            StatusTextBlock.Foreground =   new SolidColorBrush(Colors.Red);
             // Close everything.
             stream.Close();
             client.Close();
