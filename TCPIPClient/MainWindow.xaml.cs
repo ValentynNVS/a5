@@ -115,20 +115,26 @@ namespace TCPIPClient
                 MessageBox.Show("You are not connected to a server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            string guess = GuessTextBox.Text;
+
+            if (guess == "")
+            {
+                MessageBox.Show("Please have a guess", "Guess Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             // Create a TcpClient.
             // Note, for this client to work you need to have a TcpServer 
             // connected to the same address as specified by the server, port
             // combination.
-            if (!Int32.TryParse(PortTextBox.Text, out Int32 port) || port <= 0 || port > 65535)
-            {
-                MessageBox.Show("Please enter a valid port number (1-65535).", "Invalid Port", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            Int32 port = 0;
+            Int32.TryParse(PortTextBox.Text, out port);
             String server = IpAddressTextBox.Text;
             TcpClient client = new TcpClient(server, port);
 
             // Translate the passed message into ASCII and store it as a Byte array.
-            string guess = GuessTextBox.Text;
+
 
             String message = "MakeGuess|" + guess + "|" + sessionId;
             Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
@@ -193,6 +199,14 @@ namespace TCPIPClient
 
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
+            if (!connected)
+            {
+                MessageBox.Show("You are not connected to a server.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+
+            connected = false;
 
         }
 
