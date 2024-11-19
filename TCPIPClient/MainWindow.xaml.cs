@@ -15,6 +15,7 @@ namespace TCPIPClient
     public partial class MainWindow : Window
     {
         static string sessionId;
+        static bool connected;
         private DispatcherTimer gameTimer; // Timer for UI thread updates
         private int timeRemaining; // Tracks remaining time
 
@@ -29,16 +30,17 @@ namespace TCPIPClient
             // Note, for this client to work you need to have a TcpServer 
             // connected to the same address as specified by the server, port
             // combination.
-            if (!Int32.TryParse(PortTextBox.Text, out Int32 port) || port <= 0 || port > 65535)
-            {
-                MessageBox.Show("Please enter a valid port number (1-65535).", "Invalid Port", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            Int32 port = 0;
+            Int32.TryParse(PortTextBox.Text, out port);
             String server = IpAddressTextBox.Text;
             String name = NameTextBox.Text;
             Int32 timeLimit;
             Int32.TryParse(TimeLimitTextBox.Text, out timeLimit);
 
+            if (connected)
+            {
+                MessageBox.Show("Already connected.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
             if (server == "" || port == 0 || name == "" || timeLimit == 0)
             {
                 MessageBox.Show("Please fill in info first.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
