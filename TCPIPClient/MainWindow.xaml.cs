@@ -11,8 +11,18 @@ using System.Windows.Threading;
 using System.Timers;
 using System.Windows.Media;
 
+/*
+*   FILE          : MainWindow.cs
+*   PROJECT       : PROG2121 - A05
+*   PROGRAMMER    : Ahmed & Valentyn
+*   FIRST VERSION : 11/11/2024
+*   DESCRIPTION   :
+*      This is the file where the logic befind the xaml file is implemented. We retrive and send data to the server there
+*/
+
 namespace TCPIPClient
 {
+
     public partial class MainWindow : Window
     {
         static string sessionId;
@@ -20,11 +30,25 @@ namespace TCPIPClient
         private DispatcherTimer gameTimer; // Timer for UI thread updates
         private int timeRemaining; // Tracks remaining time
 
+            /*
+       *  Method  : MainWindow()
+       *  Summary : Constructor to initialize the main window.
+       *  Params  : None
+       *  Return  : None
+       */
         public MainWindow()
         {
             InitializeComponent();
         }
 
+                /*
+         *  Method  : ConnectButton_Click()
+         *  Summary : Handles connection to the server and sets up the game session.
+         *  Params  : 
+         *     object sender: The sender of the event (button clicked).
+         *     RoutedEventArgs e: Event arguments.
+         *  Return  : None
+         */
         private void ConnectButton_Click(object sender, RoutedEventArgs e)
         {
             // Create a TcpClient.
@@ -126,6 +150,14 @@ namespace TCPIPClient
             client.Close();
         }
 
+                /*
+         *  Method  : SubmitGuessButton_Click()
+         *  Summary : Sends the player's guess to the server and handles the response.
+         *  Params  : 
+         *     object sender: The sender of the event (button clicked).
+         *     RoutedEventArgs e: Event arguments.
+         *  Return  : None
+         */
         private void SubmitGuessButton_Click(object sender, RoutedEventArgs e)
         {
             if (!connected)
@@ -199,7 +231,13 @@ namespace TCPIPClient
             client.Close();
         }
 
-
+                /*
+         *  Method  : StartTimer()
+         *  Summary : Starts the countdown timer for the game.
+         *  Params  : 
+         *     int seconds: The number of seconds to count down.
+         *  Return  : None
+         */
         private void StartTimer(int seconds)
         {
             timeRemaining = seconds;
@@ -213,6 +251,14 @@ namespace TCPIPClient
             gameTimer.Start();
         }
 
+                /*
+         *  Method  : GameTimer_Tick()
+         *  Summary : Updates the UI every second to reflect the remaining time.
+         *  Params  : 
+         *     object sender: The sender of the event (timer tick).
+         *     EventArgs e: Event arguments.
+         *  Return  : None
+         */
         private void GameTimer_Tick(object sender, EventArgs e)
         {
             if (timeRemaining > 0)
@@ -228,6 +274,14 @@ namespace TCPIPClient
             }
         }
 
+                /*
+         *  Method  : EndGameButton_Click()
+         *  Summary : Ends the current game session.
+         *  Params  : 
+         *     object sender: The sender of the event (button clicked).
+         *     RoutedEventArgs e: Event arguments.
+         *  Return  : None
+         */
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
                 if (finishGameQuestion() == false)
@@ -296,6 +350,12 @@ namespace TCPIPClient
 
         }
 
+                /*
+         *  Method  : ResetGame()
+         *  Summary : Resets the game settings to prepare for a new game session.
+         *  Params  : None
+         *  Return  : None
+         */
         private void ResetGame()
         {
             IpAddressTextBox.IsEnabled = true;
@@ -314,6 +374,12 @@ namespace TCPIPClient
 
         }
 
+                /*
+         *  Method  : ShowEndGameDialog()
+         *  Summary : Displays a dialog box to the user at the end of the game, asking if they want to play again.
+         *  Params  : None
+         *  Return  : None
+         */
         private void ShowEndGameDialog()
         {
             // Show a dialog box when the game ends
@@ -331,6 +397,12 @@ namespace TCPIPClient
                 EndGameButton_Click(this, new RoutedEventArgs());
             }
         }
+                /*
+         *  Method  : finishGameQuestion()
+         *  Summary : Asks the user for confirmation to exit the game session.
+         *  Params  : None
+         *  Return  : bool: Returns true if the user confirms to exit, false if they cancel.
+         */
         private bool finishGameQuestion()
         {
             if (!connected)

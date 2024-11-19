@@ -40,11 +40,11 @@ namespace TCPIPServer
 
         /* constants */
         const int kMaxMessageLength = 256;
-        const int port = 55457;
-        const string ipv4Address = "10.179.16.204";
+        const int port = 13000;
+        const string ipv4Address = "10.0.0.31";
 
-        const int clientPort = 13001;
-        const string clientIpv4Address = "10.0.0.41";
+        const int clientPort = 13000;
+        const string clientIpv4Address = "10.0.0.31";
         volatile bool running = true;
         /*
         *  Method  : StartServer()
