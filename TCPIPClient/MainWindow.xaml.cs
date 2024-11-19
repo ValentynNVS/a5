@@ -40,12 +40,23 @@ namespace TCPIPClient
                 return;
             }
 
-            TcpClient client = new TcpClient(server, port);
-
-            if (client.Connected == false)
+            TcpClient client = new TcpClient();
+            try
             {
-                MessageBox.Show("Unable to connect.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                client = new TcpClient(server, port);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error connecting.", "Connection Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                if (client.Connected)
+                {
+                    client.Close();
+                }
+            }
+
+            if (!client.Connected)
+            {
+                return; 
             }
 
             // Translate the passed message into ASCII and store it as a Byte array.
