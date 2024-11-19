@@ -181,6 +181,19 @@ namespace TCPIPClient
             TargetWordTextBlock.Text = responseData;
             Console.WriteLine("Received: {0}", responseData);
 
+            string[] responseParts = responseData.Split('|');
+            int num = 0;
+            if (responseParts.Length > 1)
+            {
+                Int32.TryParse(responseParts[1], out num);
+            }
+            if (num <= 0)
+            {
+                Console.WriteLine("No valid words left or the number of valid words is less than or equal to 0.");
+                TargetWordTextBlock1.Text = "All words are guessed";
+                ShowEndGameDialog();
+            }
+
             // Close everything.
             stream.Close();
             client.Close();
@@ -217,10 +230,14 @@ namespace TCPIPClient
 
         private void EndGameButton_Click(object sender, RoutedEventArgs e)
         {
-            if (finishGameQuestion() == false)
+           if (timeRemaining > 0)
             {
-                return;
+                if (finishGameQuestion() == false)
+                {
+                    return;
+                }
             }
+
             else
             {
                 // Create a TcpClient.
