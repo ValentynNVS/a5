@@ -80,6 +80,7 @@ namespace TCPIPServer
                     Action<Object> gameWorker = GuessingGame;
                     Task gameTask = Task.Factory.StartNew(gameWorker, client);
                     Thread.Sleep(100);
+
                 }
             }
             catch (Exception e)
