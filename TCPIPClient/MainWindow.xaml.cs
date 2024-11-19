@@ -211,7 +211,7 @@ namespace TCPIPClient
             {
                 gameTimer.Stop();
                 TimerTextBlock.Text = "Time's up!";
-                EndGameButton_Click(this, new RoutedEventArgs());
+                ShowEndGameDialog();
             }
         }
 
