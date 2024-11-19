@@ -105,6 +105,11 @@ namespace TCPIPClient
             }
             TargetWordTextBlock.Text = "Target word received successfully!";
             TargetWordTextBlock1.Text = responseData;
+            if (responseData.Contains("|"))
+            {
+                string[] responseComponents = responseData.Split('|');
+                TargetWordTextBlock1.Text = "String: " + responseComponents[0] + "\nTotal number of words: " + responseComponents[1];
+            }
             StatusTextBlock.Text = "Status: Connected";
             StatusTextBlock.Foreground = new SolidColorBrush(Colors.Green);
             IpAddressTextBox.IsEnabled = false;
