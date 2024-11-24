@@ -30,6 +30,10 @@ namespace TCPIPClient
         private DispatcherTimer gameTimer; // Timer for UI thread updates
         private int timeRemaining; // Tracks remaining time
 
+        /* socket info of client (us) */
+        Int32 localPort = 13001;
+        IPAddress localAddress = IPAddress.Parse("10.0.0.31");
+
             /*
        *  Method  : MainWindow()
        *  Summary : Constructor to initialize the main window.
@@ -39,6 +43,10 @@ namespace TCPIPClient
         public MainWindow()
         {
             InitializeComponent();
+
+            // start a thread to listen to server shutdown
+            Action serverListenerWorker = ServerListener;
+            Task shutDownTask = Task.Factory.StartNew(serverListenerWorker);
         }
 
                 /*
@@ -417,6 +425,41 @@ namespace TCPIPClient
             }
             return true;
         }
+
+        /*
+        *  Method  : ServerListener()
+        *  Summary : This method waits and listens for a server message indicating that it want sto shut down.
+        *  Params  : None
+        *  Return  : None
+        */
+        void ServerListener()
+        {
+            // start listening to server
+            TcpListener server = new TcpListener(localAddress, localPort);
+            server.Start();
+            TcpClient client = server.AcceptTcpClient(); // a message came 
+
+            // Buffer for holding data
+            Byte[] bytes = new Byte[256];
+            String data = null;
+
+            // Stream object for reading data
+            NetworkStream stream = client.GetStream();
+
+            // Read server message
+            stream.Read(bytes, 0, bytes.Length);
+            
+            // Translate data bytes to a ASCII string.
+            data = System.Text.Encoding.ASCII.GetString(bytes);
+           
+            // inform player that game is finishing due to server closing
+            MessageBox.Show("Warning: " + data, "Connection Warning", MessageBoxButton.OK, MessageBoxImage.Warning); 
+            client.Close();
+        }
+
+
+
+
         private void TimeLimitTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
 
